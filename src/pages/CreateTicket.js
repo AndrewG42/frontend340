@@ -1,3 +1,5 @@
+import '../App.css';
+
 function CreateTicket() {
   return (
     <div>

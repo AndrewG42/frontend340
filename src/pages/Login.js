@@ -1,49 +1,75 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext";
+import { sanitize, isValidUsername } from "../utils/validation";
+import { Link } from "react-router-dom";
+import "./LoginReg.css";
 
 function Login() {
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+  });
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setForm({ ...form, [id]: sanitize(value) });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    let newErrors = {};
 
-    // TEMP — accept any username/password
-    login(username);
-    navigate("/dashboard");
+    if (!isValidUsername(form.username)) {
+      newErrors.username =
+        "Username must be 3–20 characters (letters, numbers, underscores only).";
+    }
+
+    if (!form.password) {
+      newErrors.password = "Password is required.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    alert("Username login validated — ready for backend!");
   };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
+    <div className="form-container">
+      <form className="main-form" onSubmit={handleSubmit}>
         <h2>Login</h2>
 
         <label htmlFor="username">Username</label>
-        <input 
-          type="text" 
-          id="username" 
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter your username" 
+        <input
+          type="text"
+          id="username"
+          value={form.username}
+          onChange={handleChange}
+	  placeholder="Enter your username"
         />
+        {errors.username && <p className="error">{errors.username}</p>}
 
         <label htmlFor="password">Password</label>
-        <input 
-          type="password" 
+        <input
+          type="password"
           id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your password" 
+          value={form.password}
+          onChange={handleChange}
+	  placeholder="Enter your password"
         />
+        {errors.password && <p className="error">{errors.password}</p>}
 
         <button type="submit">Log In</button>
 
         <p style={{ marginTop: "1rem" }}>
-          No account? <Link to="/register">Register here</Link>
+          Don’t have an account? <Link to="/register">Register here</Link>
+        </p>
+
+        <p style={{ marginTop: "0.5rem" }}>
+          <Link to="/forgot-password">Forgot your password?</Link>
         </p>
       </form>
     </div>

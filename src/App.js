@@ -1,3 +1,4 @@
+// src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
@@ -9,8 +10,9 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 import Login from "./pages/Login";
-import RegisterPage from "./pages/RegisterPage";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -21,8 +23,10 @@ function App() {
 
           <main className="app-main">
             <Routes>
+              {/* Public routes */}
               <Route path="/" element={<Login />} />
-              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/register" element={<Register />} />
+ 	      <Route path="/forgot-password" element={<ForgotPassword />} />
 
               {/* Protected route */}
               <Route
@@ -33,6 +37,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* (Optional) catch-all 404 later */}
+              {/* <Route path="*" element={<NotFound />} /> */}
             </Routes>
           </main>
 
@@ -44,4 +51,3 @@ function App() {
 }
 
 export default App;
-

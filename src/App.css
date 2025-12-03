@@ -106,6 +106,10 @@ body {
   background-color: #1e293b;
 }
 
+.app-main {
+  padding: 2rem;
+}
+
 /* NAVBAR */
 .nav-bar {
   display: flex;

@@ -1,23 +1,48 @@
-import React from 'react';
-import '../App.css';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
-export default function RegisterPage() {
+function RegisterPage() {
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+    email: "",
+  });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // TEMP — no real backend validation yet
+    navigate("/");
+  };
+
   return (
-    <div className="container">
-      <h1>Register for FixIT</h1>
-      <p>Create your account below. To register as a specialist, please attach proof of technical expertise.</p>
-      <form>
-        <input type="text" placeholder="Username" required />
-        <input type="email" placeholder="Email" required />
-        <input type="password" placeholder="Password" required />
-        <select>
-          <option>User</option>
-          <option>Specialist</option>
-        </select>
-        <input type="file" />
-        <button type="submit">Sign Up</button>
+    <div className="login-container">
+      <form className="login-form" onSubmit={handleSubmit}>
+        <h2>Register</h2>
+
+        <label>Username</label>
+        <input name="username" value={form.username} onChange={handleChange} />
+
+        <label>Email</label>
+        <input name="email" value={form.email} onChange={handleChange} />
+
+        <label>Password</label>
+        <input name="password" type="password" value={form.password} onChange={handleChange} />
+
+        <button type="submit">Create Account</button>
+
+        <p style={{ marginTop: "1rem" }}>
+          Already have an account? <Link to="/">Login here</Link>
+        </p>
       </form>
     </div>
   );
 }
 
+export default RegisterPage;

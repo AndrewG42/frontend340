@@ -1,44 +1,45 @@
-import './App.css';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
 
-import Login from './pages/Login';
-import RegisterPage from './pages/RegisterPage';
-import Dashboard from './pages/Dashboard';
-import TicketList from './pages/TicketList';
-import TicketDetail from './pages/TicketDetail';
-import CreateTicket from './pages/CreateTicket';
-import Messages from './pages/Messages';
-import AdminPanel from './pages/AdminPanel';
-import NotFound from './pages/NotFound';
+import { AuthProvider } from "./auth/AuthContext";
+import ProtectedRoute from "./auth/ProtectedRoute";
+
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+
+import Login from "./pages/Login";
+import RegisterPage from "./pages/RegisterPage";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <Router>
-      <div className="navbar">
-        <nav>
-          {/* TEMP NAVIGATION FOR DEMO PURPOSES */}
-          <Link to="/">Login</Link>
-          <Link to="/register">Register</Link>
-          <Link to="/dashboard">Dashboard</Link>
-          <Link to="/tickets">Tickets</Link>
-          <Link to="/create-ticket">Create Ticket</Link>
-          <Link to="/messages">Messages</Link>
-          <Link to="/admin">Admin</Link>
-        </nav>
-      </div>
+    <AuthProvider>
+      <Router>
+        <div className="app">
+          <Header />
 
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tickets" element={<TicketList />} />
-        <Route path="/tickets/:id" element={<TicketDetail />} />
-        <Route path="/create-ticket" element={<CreateTicket />} />
-        <Route path="/messages" element={<Messages />} />
-        <Route path="/admin" element={<AdminPanel />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+          <main className="app-main">
+            <Routes>
+              <Route path="/" element={<Login />} />
+              <Route path="/register" element={<RegisterPage />} />
+
+              {/* Protected route */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+
+          <Footer />
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 

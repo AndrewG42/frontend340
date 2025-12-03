@@ -1,176 +1,152 @@
-/* ===== Layout ===== */
-#app-container {
-  font-family: Arial, sans-serif;
-  background-color: #f5f6fa;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-#page-container {
-  max-width: 900px;
-  margin: 0 auto;
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-
-/* ===== Forms ===== */
-.form-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.form-container label {
-  font-weight: bold;
-}
-
-.form-container input,
-.form-container textarea,
-.form-container select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-.button-primary {
-  background-color: #4c84ff;
-  color: white;
-  padding: 10px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.button-primary:hover {
-  background-color: #3a6fe0;
-}
-
-.button-secondary {
-  background-color: #ddd;
-  color: black;
-  padding: 10px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.button-secondary:hover {
-  background-color: #ccc;
-}
-
-/* ===== Navigation (temporary for testing) ===== */
-#nav-links {
-  display: flex;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-#nav-links a {
-  text-decoration: none;
-  color: #4c84ff;
-  font-weight: bold;
-}
-
-#nav-links a:hover {
-  color: #2e63d6;
-}
-
-/* ===== Dashboard ===== */
-#dashboard-header {
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 15px;
-}
-
-.dashboard-section {
-  margin-top: 25px;
-}
-
-/* ===== Ticket List ===== */
-.ticket-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.ticket-card {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fafafa;
-  cursor: pointer;
-}
-
-.ticket-card:hover {
-  background: #f0f0f0;
-}
-
-/* ===== Ticket Detail ===== */
-#ticket-detail-container {
-  margin-top: 20px;
-}
-
-#ticket-detail-header {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.ticket-meta {
-  color: #555;
-  margin-bottom: 10px;
-}
-
-.ticket-comments {
-  margin-top: 20px;
-}
-
-/* ===== Messages Page ===== */
-#messages-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.message-card {
-  padding: 12px;
-  background: #eef3ff;
-  border: 1px solid #ccd9ff;
-  border-radius: 8px;
-}
-
-/* ===== Create Ticket ===== */
-#create-ticket-container {
-  margin-top: 20px;
-}
-
-#create-ticket-header {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-/* ===== Admin Panel ===== */
-#admin-panel-container {
-  margin-top: 20px;
-}
-
-#admin-header {
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 15px;
-}
-
-.admin-section {
-  margin-top: 20px;
-}
-
-/* ===== Not Found ===== */
-#not-found-message {
+.App {
   text-align: center;
-  padding: 40px;
-  font-size: 24px;
-  color: #555;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+.app-header {
+  background-color: #1e293b;
+  text-align: center;
+  padding: 1.5rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+}
+
+.login-form {
+  background-color: #1e293b;
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+}
+
+.login-form h2 {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.login-form label {
+  margin-top: 0.5rem;
+}
+
+.login-form input {
+  margin-top: 0.25rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+}
+
+.login-form button {
+  background-color: #38bdf8;
+  border: none;
+  color: #0f172a;
+  font-weight: bold;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-form button:hover {
+  background-color: #0ea5e9;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #1e293b;
+}
+
+/* NAVBAR */
+.nav-bar {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.nav-bar a {
+  color: #38bdf8;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.logout-btn {
+  background: #e11d48;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.logout-btn:hover {
+  background: #be123c;
+}
+
+/* Dashboard */
+.app-main {
+  padding: 2rem;
+}
+
+.dashboard-container {
+  text-align: center;
+}
+
+.dashboard-card {
+  background-color: #1e293b;
+  padding: 1.5rem;
+  margin: 1.5rem auto;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }

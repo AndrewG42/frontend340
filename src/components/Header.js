@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 function Header() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <header className="app-header">
@@ -20,8 +20,7 @@ function Header() {
         {user && (
           <>
             <Link to="/dashboard">Dashboard</Link>
-            <button className="logout-btn" onClick={logout}>Logout</button>
-          </>
+              </>
         )}
       </nav>
     </header>

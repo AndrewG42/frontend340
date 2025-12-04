@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { sanitize, isValidUsername } from "../utils/validation";
-import { Link } from "react-router-dom";
-import "./LoginReg.css";
+import { Link, useNavigate } from "react-router-dom";
+import "./LoginReg.css"; // your shared CSS file
+import { useAuth } from "../auth/AuthContext";
 
 function Login() {
   const [form, setForm] = useState({
@@ -10,15 +11,19 @@ function Login() {
   });
 
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { id, value } = e.target;
     setForm({ ...form, [id]: sanitize(value) });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
+    setServerError("");
 
     if (!isValidUsername(form.username)) {
       newErrors.username =
@@ -34,7 +39,33 @@ function Login() {
       return;
     }
 
-    alert("Username login validated — ready for backend!");
+    try {
+      const res = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // important for cookies
+        body: JSON.stringify({
+          username: form.username,
+          password: form.password,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setServerError(data.error || "Login failed.");
+        return;
+      }
+
+      const data = await res.json();
+      // store user in context
+      login(data.user.username);
+
+      // redirect to dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Login error:", err);
+      setServerError("Unable to reach server. Please try again.");
+    }
   };
 
   return (
@@ -61,6 +92,8 @@ function Login() {
 	  placeholder="Enter your password"
         />
         {errors.password && <p className="error">{errors.password}</p>}
+
+        {serverError && <p className="error">{serverError}</p>}
 
         <button type="submit">Log In</button>
 

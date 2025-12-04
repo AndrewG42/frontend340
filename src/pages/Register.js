@@ -1,3 +1,4 @@
+// src/pages/Register.js
 import React, { useState } from "react";
 import {
   sanitize,
@@ -5,8 +6,8 @@ import {
   isValidPassword,
   isValidUsername,
 } from "../utils/validation";
-import { Link } from "react-router-dom";
-import "./LoginReg.css";
+import { Link, useNavigate } from "react-router-dom";
+import "./LoginReg.css"; // shared styling file
 
 function Register() {
   const [form, setForm] = useState({
@@ -17,6 +18,7 @@ function Register() {
   });
 
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -24,9 +26,10 @@ function Register() {
   };
 
   const checkAvailability = async () => {
-    const res = await fetch("http://localhost:5000/auth/check-availability", {
+    const res = await fetch("/auth/check-availability", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ username: form.username, email: form.email }),
     });
 
@@ -65,17 +68,54 @@ function Register() {
     }
 
     // Check username/email availability via backend
-    const result = await checkAvailability();
+    try {
+      const result = await checkAvailability();
 
-    if (!result.usernameAvailable) newErrors.username = "Username already taken.";
-    if (!result.emailAvailable) newErrors.email = "Email already registered.";
+      if (!result.usernameAvailable) {
+        newErrors.username = "Username already taken.";
+      }
+      if (!result.emailAvailable) {
+        newErrors.email = "Email already registered.";
+      }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+      }
+    } catch (err) {
+      console.error("Availability check failed:", err);
+      setErrors({ form: "Unable to check username/email availability." });
       return;
     }
 
-    alert("Registration validated — ready for backend!");
+    // 🚀 Actually register the user via backend
+    try {
+      const res = await fetch("/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setErrors({
+          form: data.error || "Registration failed. Please try again.",
+        });
+        return;
+      }
+
+      // Optional: you could show a success message first
+      // For now, just send them to login
+      navigate("/");
+    } catch (err) {
+      console.error("Register error:", err);
+      setErrors({ form: "Unable to reach server. Please try again." });
+    }
   };
 
   return (
@@ -102,7 +142,7 @@ function Register() {
           id="email"
           value={form.email}
           onChange={handleChange}
-	  placeholder="Enter your email address"
+	  placeholder="Enter your username"
         />
         {errors.email && <p className="error">{errors.email}</p>}
 
@@ -131,6 +171,8 @@ function Register() {
         {errors.confirmPassword && (
           <p className="error">{errors.confirmPassword}</p>
         )}
+
+        {errors.form && <p className="error">{errors.form}</p>}
 
         <button type="submit">Register</button>
 

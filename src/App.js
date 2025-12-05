@@ -1,6 +1,6 @@
 // src/App.js
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 
 import { AuthProvider } from "./auth/AuthContext";
@@ -27,6 +27,7 @@ function App() {
               <Route path="/" element={<Login />} />
               <Route path="/register" element={<Register />} />
  	      <Route path="/forgot-password" element={<ForgotPassword />} />
+	      <Route path="*" element={<Navigate to="/" replace />} />
 
               {/* Protected route */}
               <Route

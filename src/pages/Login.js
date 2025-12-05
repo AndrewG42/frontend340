@@ -1,10 +1,17 @@
 import React, { useState } from "react";
 import { sanitize, isValidUsername } from "../utils/validation";
-import { Link, useNavigate } from "react-router-dom";
-import "./LoginReg.css"; // your shared CSS file
+import { Link, useNavigate, Navigate } from "react-router-dom";
+import "./LoginReg.css";
 import { useAuth } from "../auth/AuthContext";
 
 function Login() {
+  // --------------------------------------------------------
+  // HOOKS MUST COME FIRST
+  // --------------------------------------------------------
+  const { user, loading, login } = useAuth();
+  const navigate = useNavigate();
+
+  // Form hooks
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -12,8 +19,28 @@ function Login() {
 
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
-  const navigate = useNavigate();
-  const { login } = useAuth();
+
+  // --------------------------------------------------------
+  // EARLY RETURNS (AFTER HOOKS)
+  // --------------------------------------------------------
+
+  // 1) Still waiting on /auth/me check → show loader
+  if (loading) {
+    return (
+      <div className="form-container">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  // 2) User already logged in → redirect immediately
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // --------------------------------------------------------
+  // EVENT HANDLERS
+  // --------------------------------------------------------
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -43,11 +70,8 @@ function Login() {
       const res = await fetch("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // important for cookies
-        body: JSON.stringify({
-          username: form.username,
-          password: form.password,
-        }),
+        credentials: "include",
+        body: JSON.stringify(form),
       });
 
       if (!res.ok) {
@@ -57,16 +81,18 @@ function Login() {
       }
 
       const data = await res.json();
-      // store user in context
       login(data.user.username);
 
-      // redirect to dashboard
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
       setServerError("Unable to reach server. Please try again.");
     }
   };
+
+  // --------------------------------------------------------
+  // RENDER FORM (NOT LOGGED IN)
+  // --------------------------------------------------------
 
   return (
     <div className="form-container">
@@ -79,7 +105,7 @@ function Login() {
           id="username"
           value={form.username}
           onChange={handleChange}
-	  placeholder="Enter your username"
+          placeholder="Enter your username"
         />
         {errors.username && <p className="error">{errors.username}</p>}
 
@@ -89,7 +115,7 @@ function Login() {
           id="password"
           value={form.password}
           onChange={handleChange}
-	  placeholder="Enter your password"
+          placeholder="Enter your password"
         />
         {errors.password && <p className="error">{errors.password}</p>}
 

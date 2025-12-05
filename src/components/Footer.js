@@ -5,7 +5,6 @@ function Footer() {
 	const { user, logout } = useAuth();
   return (
     <footer className="app-footer">
-      <p>© 2025 FixIT | Internal Support Portal</p>
 	{user && (
 	<>
 	<button onClick={logout} className="logout-btn">
@@ -13,6 +12,7 @@ function Footer() {
 	</button>
 	</>
 	)}
+	<p>© 2025 FixIT | Internal Support Portal</p>
     </footer>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "./LoginReg.css";
+import { useAuth } from "../auth/AuthContext";
 
 export default function TicketDetail() {
   const { id } = useParams();
@@ -17,6 +18,7 @@ export default function TicketDetail() {
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
+  const { user } = useAuth();
 
   async function load() {
     setLoading(true);
@@ -199,6 +201,31 @@ export default function TicketDetail() {
                     ? new Date(ticket.last_activity_at).toLocaleString()
                     : "—"}
                 </div>
+
+
+		{/* Role-based status control */}
+		{["specialist", "admin"].includes(user?.role) && (
+		  <div style={{ marginTop: "0.6rem" }}>
+		    <label style={{ fontSize: "0.85rem", opacity: 0.85 }}>Update status</label>
+		    <select
+		      value={ticket.status}
+		      onChange={async (e) => {
+		        await fetch(`/tickets/${id}/status`, {
+		          method: "PATCH",
+		          headers: { "Content-Type": "application/json" },
+		          credentials: "include",
+		          body: JSON.stringify({ status: e.target.value }),
+		        });
+		        load();
+		      }}
+		    >
+		      <option value="open">Open</option>
+		      <option value="in_progress">In Progress</option>
+		      <option value="resolved">Resolved</option>
+		      <option value="closed">Closed</option>
+		    </select>
+		  </div>
+		)}
 
                 {tags.length > 0 && (
                   <div className="ticket-tags">

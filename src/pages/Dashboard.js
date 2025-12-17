@@ -1,6 +1,7 @@
 // src/pages/Dashboard.js
 import React from "react";
 import { useAuth } from "../auth/AuthContext";
+import { Link } from "react-router-dom";
 
 function Dashboard() {
   const { user } = useAuth();
@@ -12,7 +13,8 @@ function Dashboard() {
 
       <div className="dashboard-card">
         <h3>Your Tickets</h3>
-        <p>(Ticket list will go here in a later milestone.)</p>
+        <p>Create and view your support tickets.</p>
+        <Link className="link-btn" to="/tickets">View Tickets</Link>
       </div>
 
       <div className="dashboard-card">

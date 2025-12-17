@@ -13,6 +13,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
+import TwoFactor from "./pages/TwoFactor";
+import Tickets from "./pages/Tickets";
+import TicketDetail from "./pages/TicketDetail";
 
 function App() {
   return (
@@ -28,6 +31,7 @@ function App() {
               <Route path="/register" element={<Register />} />
  	      <Route path="/forgot-password" element={<ForgotPassword />} />
 	      <Route path="*" element={<Navigate to="/" replace />} />
+	      <Route path="/2fa" element={<TwoFactor />} />
 
               {/* Protected route */}
               <Route
@@ -38,6 +42,23 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+	      <Route
+	        path="/tickets"
+	        element={
+	          <ProtectedRoute>
+     		    <Tickets />
+ 	          </ProtectedRoute>
+	        }
+	      />
+		<Route
+		  path="/tickets/:id"
+		  element={
+		    <ProtectedRoute>
+		      <TicketDetail />
+		    </ProtectedRoute>
+		  }
+		/>
+
 
               {/* (Optional) catch-all 404 later */}
               {/* <Route path="*" element={<NotFound />} /> */}

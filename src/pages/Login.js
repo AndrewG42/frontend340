@@ -81,9 +81,18 @@ function Login() {
       }
 
       const data = await res.json();
-      login(data.user.username);
+//      login(data.user.username);
+	// If backend says 2FA required, go to 2FA page
+if (data.twofaRequired) {
+  navigate("/2fa", { state: { username: data.user.username } });
+  return;
+}
 
-      navigate("/dashboard");
+// (fallback if you later disable 2FA)
+login(data.user.username);
+navigate("/dashboard");
+
+//      navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
       setServerError("Unable to reach server. Please try again.");

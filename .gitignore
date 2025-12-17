@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+
+fixit-mailer/.env
+fixit-mailer/node_modules

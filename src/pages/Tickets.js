@@ -15,13 +15,17 @@ export default function Tickets() {
   const [err, setErr] = useState("");
   const [okMsg, setOkMsg] = useState("");
 
+  // Search state
+  const [q, setQ] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchErr, setSearchErr] = useState("");
+
   async function loadTickets() {
     setLoading(true);
     setErr("");
     try {
-      const res = await fetch("/tickets", {
-        credentials: "include",
-      });
+      const res = await fetch("/tickets", { credentials: "include" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setErr(data.error || "Failed to load tickets.");
@@ -86,6 +90,45 @@ export default function Tickets() {
     }
   };
 
+  const runSearch = async (e) => {
+    e.preventDefault();
+    const query = q.trim();
+    setSearchErr("");
+    setSearchResults([]);
+
+    if (!query) {
+      setSearching(false);
+      return;
+    }
+
+    setSearching(true);
+
+    try {
+      const res = await fetch(`/tickets/search?q=${encodeURIComponent(query)}`, {
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setSearchErr(data.error || "Search failed.");
+        return;
+      }
+
+      setSearchResults(data.results || []);
+    } catch {
+      setSearchErr("Server unreachable.");
+    }
+  };
+
+  const clearSearch = () => {
+    setQ("");
+    setSearching(false);
+    setSearchResults([]);
+    setSearchErr("");
+  };
+
+  const displayTickets = searching ? searchResults : tickets;
+
   return (
     <div className="page-container">
       <div className="page-header-row">
@@ -96,6 +139,31 @@ export default function Tickets() {
       </div>
 
       <div className="panel">
+        <h3>Search Tickets</h3>
+        <form className="ticket-form" onSubmit={runSearch}>
+          <label htmlFor="ticketSearch">Search by title/body</label>
+          <input
+            id="ticketSearch"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="e.g., SQL, connection refused, 500 error"
+          />
+          <div style={{ display: "flex", gap: "0.6rem" }}>
+            <button type="submit">Search</button>
+            <button type="button" className="secondary-btn" onClick={clearSearch}>
+              Clear
+            </button>
+          </div>
+          {searchErr && <p className="error">{searchErr}</p>}
+          {searching && !searchErr && (
+            <p style={{ opacity: 0.85, marginTop: "0.5rem" }}>
+              Showing search results for: <b>{q.trim()}</b>
+            </p>
+          )}
+        </form>
+      </div>
+
+      <div className="panel" style={{ marginTop: "1.25rem" }}>
         <h3>Create a Ticket</h3>
         <form className="ticket-form" onSubmit={handleCreate}>
           <label htmlFor="title">Title</label>
@@ -132,19 +200,21 @@ export default function Tickets() {
 
       <div className="panel" style={{ marginTop: "1.25rem" }}>
         <div className="tickets-header">
-          <h3>Recent Tickets</h3>
-          <button className="secondary-btn" onClick={loadTickets} type="button">
-            Refresh
-          </button>
+          <h3>{searching ? "Search Results" : "Recent Tickets"}</h3>
+          <div style={{ display: "flex", gap: "0.6rem" }}>
+            <button className="secondary-btn" onClick={loadTickets} type="button">
+              Refresh
+            </button>
+          </div>
         </div>
 
-        {loading ? (
+        {loading && !searching ? (
           <p style={{ opacity: 0.9 }}>Loading tickets...</p>
-        ) : tickets.length === 0 ? (
-          <p style={{ opacity: 0.9 }}>No tickets yet.</p>
+        ) : displayTickets.length === 0 ? (
+          <p style={{ opacity: 0.9 }}>{searching ? "No matches found." : "No tickets yet."}</p>
         ) : (
           <div className="ticket-list">
-            {tickets.map((t) => (
+            {displayTickets.map((t) => (
               <div className="ticket-card" key={t.id}>
                 <div className="ticket-card-top">
                   <div>
@@ -153,8 +223,9 @@ export default function Tickets() {
                     </div>
                     <div className="ticket-meta">
                       Status: <b>{t.status}</b> • Last activity:{" "}
-                      {new Date(t.last_activity_at).toLocaleString()}
+                      {t.last_activity_at ? new Date(t.last_activity_at).toLocaleString() : "—"}
                     </div>
+
                     {t.tags && (
                       <div className="ticket-tags">
                         {String(t.tags)
@@ -174,9 +245,11 @@ export default function Tickets() {
                   </Link>
                 </div>
 
-                <div className="ticket-body-preview">
-                  {t.body?.length > 180 ? t.body.slice(0, 180) + "…" : t.body}
-                </div>
+                {t.body && (
+                  <div className="ticket-body-preview">
+                    {t.body.length > 180 ? t.body.slice(0, 180) + "…" : t.body}
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -5,12 +5,15 @@ import { useAuth } from "../auth/AuthContext";
 
 export default function TicketDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
 
   const [ticket, setTicket] = useState(null);
   const [tags, setTags] = useState([]);
   const [comments, setComments] = useState([]);
 
   const [newComment, setNewComment] = useState("");
+  const [newTag, setNewTag] = useState("");
+
   const [err, setErr] = useState("");
   const [okMsg, setOkMsg] = useState("");
   const [loading, setLoading] = useState(true);
@@ -18,15 +21,16 @@ export default function TicketDetail() {
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
-  const { user } = useAuth();
 
   async function load() {
     setLoading(true);
     setErr("");
     setOkMsg("");
+
     try {
       const res = await fetch(`/tickets/${id}`, { credentials: "include" });
       const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
         setErr(data.error || "Failed to load ticket.");
         setLoading(false);
@@ -37,7 +41,7 @@ export default function TicketDetail() {
       setComments(data.comments || []);
       setTags(data.tags || []);
 
-      // keep edit fields in sync with the server ticket
+      // keep edit fields in sync with server ticket
       setEditTitle(data.ticket.title || "");
       setEditBody(data.ticket.body || "");
     } catch (e) {
@@ -79,7 +83,7 @@ export default function TicketDetail() {
       setNewComment("");
       setOkMsg("Comment posted.");
       await load();
-    } catch (e2) {
+    } catch {
       setErr("Server unreachable.");
     }
   };
@@ -143,6 +147,58 @@ export default function TicketDetail() {
     }
   };
 
+  const addTag = async () => {
+    const tag = newTag.trim();
+    if (!tag) return;
+
+    setErr("");
+    setOkMsg("");
+
+    try {
+      const res = await fetch(`/tickets/${id}/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ tag }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(data.error || "Failed to add tag.");
+        return;
+      }
+
+      setNewTag("");
+      setOkMsg("Tag added.");
+      await load();
+    } catch {
+      setErr("Server unreachable.");
+    }
+  };
+
+  const removeTag = async (tagName) => {
+    setErr("");
+    setOkMsg("");
+
+    try {
+      const res = await fetch(`/tickets/${id}/tags/${encodeURIComponent(tagName)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(data.error || "Failed to remove tag.");
+        return;
+      }
+
+      setOkMsg("Tag removed.");
+      await load();
+    } catch {
+      setErr("Server unreachable.");
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="page-header-row">
@@ -169,20 +225,16 @@ export default function TicketDetail() {
         </div>
       ) : (
         <>
-          {/* Ticket details panel */}
           <div className="panel">
             <div className="ticket-detail-top">
               <div style={{ width: "100%" }}>
-                {/* Title + meta + tags */}
                 {!editMode ? (
                   <div className="ticket-title" style={{ fontSize: "1.15rem" }}>
                     {ticket.title}
                   </div>
                 ) : (
                   <div style={{ marginBottom: "0.75rem" }}>
-                    <label style={{ display: "block", marginBottom: "0.25rem" }}>
-                      Title
-                    </label>
+                    <label style={{ display: "block", marginBottom: "0.25rem" }}>Title</label>
                     <input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
@@ -193,76 +245,84 @@ export default function TicketDetail() {
 
                 <div className="ticket-meta">
                   Status: <b>{ticket.status}</b> • Created:{" "}
-                  {ticket.created_at
-                    ? new Date(ticket.created_at).toLocaleString()
-                    : "—"}{" "}
-                  • Last activity:{" "}
-                  {ticket.last_activity_at
-                    ? new Date(ticket.last_activity_at).toLocaleString()
-                    : "—"}
+                  {ticket.created_at ? new Date(ticket.created_at).toLocaleString() : "—"} •
+                  Last activity:{" "}
+                  {ticket.last_activity_at ? new Date(ticket.last_activity_at).toLocaleString() : "—"}
                 </div>
 
-
-		{/* Role-based status control */}
-		{["specialist", "admin"].includes(user?.role) && (
-		  <div style={{ marginTop: "0.6rem" }}>
-		    <label style={{ fontSize: "0.85rem", opacity: 0.85 }}>Update status</label>
-		    <select
-		      value={ticket.status}
-		      onChange={async (e) => {
-		        await fetch(`/tickets/${id}/status`, {
-		          method: "PATCH",
-		          headers: { "Content-Type": "application/json" },
-		          credentials: "include",
-		          body: JSON.stringify({ status: e.target.value }),
-		        });
-		        load();
-		      }}
-		    >
-		      <option value="open">Open</option>
-		      <option value="in_progress">In Progress</option>
-		      <option value="resolved">Resolved</option>
-		      <option value="closed">Closed</option>
-		    </select>
-		  </div>
-		)}
-
-                {tags.length > 0 && (
-                  <div className="ticket-tags">
-                    {tags.map((t) => (
-                      <span className="tag-pill" key={t}>
-                        {t}
-                      </span>
-                    ))}
+                {/* Status dropdown for specialist/admin */}
+                {["specialist", "admin"].includes(user?.role) && (
+                  <div style={{ marginTop: "0.6rem" }}>
+                    <label style={{ fontSize: "0.85rem", opacity: 0.85 }}>Update status</label>
+                    <select
+                      value={ticket.status}
+                      onChange={async (e) => {
+                        await fetch(`/tickets/${id}/status`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          credentials: "include",
+                          body: JSON.stringify({ status: e.target.value }),
+                        });
+                        load();
+                      }}
+                    >
+                      <option value="open">Open</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="closed">Closed</option>
+                    </select>
                   </div>
                 )}
 
-                {/* ---- C) Edit/Delete buttons go RIGHT HERE ---- */}
-                <div className="ticket-detail-actions">
+                {/* Tags display + editing */}
+                <div style={{ marginTop: "0.75rem" }}>
+                  <label style={{ fontSize: "0.9rem", opacity: 0.9 }}>Tags</label>
+
+                  <div className="ticket-tags" style={{ marginTop: "0.4rem" }}>
+                    {tags.length === 0 ? (
+                      <span style={{ opacity: 0.8 }}>No tags</span>
+                    ) : (
+                      tags.map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          className="tag-pill"
+                          title="Remove tag"
+                          onClick={() => removeTag(t)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {t} ✕
+                        </button>
+                      ))
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                    <input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="Add tag (e.g., sql)"
+                    />
+                    <button type="button" className="secondary-btn" onClick={addTag}>
+                      Add
+                    </button>
+                  </div>
+                </div>
+
+                {/* Edit/Delete buttons */}
+                <div className="ticket-detail-actions" style={{ marginTop: "0.9rem" }}>
                   {!editMode ? (
                     <>
-                      <button
-                        className="secondary-btn"
-                        type="button"
-                        onClick={() => setEditMode(true)}
-                      >
+                      <button className="secondary-btn" type="button" onClick={() => setEditMode(true)}>
                         Edit Ticket
                       </button>
-                      <button
-                        className="danger-btn"
-                        type="button"
-                        onClick={deleteTicket}
-                      >
+                      <button className="danger-btn" type="button" onClick={deleteTicket}>
                         Delete
                       </button>
                     </>
                   ) : (
                     <>
-                      <button
-                        className="secondary-btn"
-                        type="button"
-                        onClick={saveEdits}
-                      >
+                      <button className="secondary-btn" type="button" onClick={saveEdits}>
                         Save
                       </button>
                       <button
@@ -270,7 +330,6 @@ export default function TicketDetail() {
                         type="button"
                         onClick={() => {
                           setEditMode(false);
-                          // revert edits back to current ticket values
                           setEditTitle(ticket.title || "");
                           setEditBody(ticket.body || "");
                         }}
@@ -281,22 +340,13 @@ export default function TicketDetail() {
                   )}
                 </div>
 
-                {/* Body (view vs edit) */}
                 {!editMode ? (
-                  <div
-                    style={{
-                      marginTop: "1rem",
-                      lineHeight: 1.45,
-                      opacity: 0.98,
-                    }}
-                  >
+                  <div style={{ marginTop: "1rem", lineHeight: 1.45, opacity: 0.98 }}>
                     {ticket.body}
                   </div>
                 ) : (
                   <div style={{ marginTop: "1rem" }}>
-                    <label style={{ display: "block", marginBottom: "0.25rem" }}>
-                      Description
-                    </label>
+                    <label style={{ display: "block", marginBottom: "0.25rem" }}>Description</label>
                     <textarea
                       value={editBody}
                       onChange={(e) => setEditBody(e.target.value)}
@@ -312,7 +362,6 @@ export default function TicketDetail() {
             {okMsg && <p className="ok" style={{ marginTop: "0.75rem" }}>{okMsg}</p>}
           </div>
 
-          {/* Comments panel */}
           <div className="panel" style={{ marginTop: "1.25rem" }}>
             <div className="tickets-header">
               <h3>Comments</h3>
@@ -328,8 +377,7 @@ export default function TicketDetail() {
                 {comments.map((c) => (
                   <div className="comment-card" key={c.id}>
                     <div className="comment-meta">
-                      User #{c.user_id} •{" "}
-                      {new Date(c.created_at).toLocaleString()}
+                      User #{c.user_id} • {new Date(c.created_at).toLocaleString()}
                     </div>
                     <div style={{ marginTop: "0.4rem" }}>{c.body}</div>
                   </div>
@@ -337,11 +385,7 @@ export default function TicketDetail() {
               </div>
             )}
 
-            <form
-              className="ticket-form"
-              onSubmit={submitComment}
-              style={{ marginTop: "1rem" }}
-            >
+            <form className="ticket-form" onSubmit={submitComment} style={{ marginTop: "1rem" }}>
               <label htmlFor="newComment">Add a comment</label>
               <textarea
                 id="newComment"

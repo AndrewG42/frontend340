@@ -81,7 +81,7 @@ function Login() {
       }
 
       const data = await res.json();
-//      login(data.user.username);
+//      login(data.user);
 	// If backend says 2FA required, go to 2FA page
 if (data.twofaRequired) {
   navigate("/2fa", { state: { username: data.user.username } });
@@ -89,7 +89,7 @@ if (data.twofaRequired) {
 }
 
 // (fallback if you later disable 2FA)
-login(data.user.username);
+login(data.user);
 navigate("/dashboard");
 
 //      navigate("/dashboard");

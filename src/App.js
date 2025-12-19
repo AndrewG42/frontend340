@@ -16,6 +16,10 @@ import ForgotPassword from "./pages/ForgotPassword";
 import TwoFactor from "./pages/TwoFactor";
 import Tickets from "./pages/Tickets";
 import TicketDetail from "./pages/TicketDetail";
+import Messages from "./pages/Messages";
+import AdminUsers from "./pages/AdminUsers";
+import Inbox from "./pages/Inbox";
+
 
 function App() {
   return (
@@ -51,6 +55,34 @@ function App() {
 	        }
 	      />
 		<Route
+		  path="/messages/:userId"
+		  element={
+		    <ProtectedRoute>
+		      <Messages />
+		    </ProtectedRoute>
+		  }
+		/>
+		<Route
+  path="/inbox"
+  element={
+    <ProtectedRoute>
+      <Inbox />
+    </ProtectedRoute>
+  }
+/>
+
+
+
+
+   		<Route
+  path="/admin/users"
+  element={
+    <ProtectedRoute>
+      <AdminUsers />
+    </ProtectedRoute>
+  }
+/>
+		<Route
 		  path="/tickets/:id"
 		  element={
 		    <ProtectedRoute>
@@ -58,7 +90,6 @@ function App() {
 		    </ProtectedRoute>
 		  }
 		/>
-
 
               {/* (Optional) catch-all 404 later */}
               {/* <Route path="*" element={<NotFound />} /> */}

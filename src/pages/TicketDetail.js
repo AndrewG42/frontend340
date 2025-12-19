@@ -249,7 +249,44 @@ export default function TicketDetail() {
                   Last activity:{" "}
                   {ticket.last_activity_at ? new Date(ticket.last_activity_at).toLocaleString() : "—"}
                 </div>
+		<div style={{ marginTop: "1rem", display: "flex", gap: "0.6rem", alignItems: "center" }}>
+  <button
+    className="secondary-btn"
+    type="button"
+    onClick={async () => {
+      setErr("");
+      setOkMsg("");
+      try {
+        const res = await fetch(`/tickets/${id}/helpful`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ delta: 1 }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return setErr(data.error || "Failed to vote helpful.");
+        setOkMsg("Thanks! Marked as helpful.");
+        await load();
+      } catch {
+        setErr("Server unreachable.");
+      }
+    }}
+  >
+    Was this helpful?
+  </button>
 
+  <div style={{ opacity: 0.9 }}>
+    Helpful score: <b>{ticket.helpful_score ?? 0}</b>
+  </div>
+</div>
+
+                {["admin", "specialist"].includes(user?.role) && (
+  <div style={{ marginTop: "0.75rem" }}>
+    <Link className="link-btn" to={`/messages/${ticket.created_by}`}>
+      Message Ticket Creator
+    </Link>
+  </div>
+)}
                 {/* Status dropdown for specialist/admin */}
                 {["specialist", "admin"].includes(user?.role) && (
                   <div style={{ marginTop: "0.6rem" }}>

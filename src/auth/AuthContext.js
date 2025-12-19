@@ -1,49 +1,19 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+// auth/AuthContext.js
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);      // null means no user yet
-  const [loading, setLoading] = useState(true); // stops redirect flicker
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Called after login
-  const login = (username) => {
-    setUser({ username });
-  };
-
-  // Called after logout
-  const logout = async () => {
-  try {
-    await fetch("/auth/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-  } catch (err) {
-    console.error("Logout error:", err);
-  }
-
-  setUser(null);
-};
-
-
-  // --------------------------------------------------
-  // CHECK LOGIN STATUS ON PAGE RELOAD
-  // --------------------------------------------------
-  const checkAuth = async () => {
+  const refreshMe = async () => {
     try {
-      const res = await fetch("/auth/me", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        setUser(null);
-      } else {
-        const data = await res.json();
-        setUser(data.user);
-      }
-    } catch (err) {
-      console.error("Auth check failed:", err);
+      const res = await fetch("/auth/me", { credentials: "include" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) setUser(data.user);
+      else setUser(null);
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
@@ -51,11 +21,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    checkAuth();
+    refreshMe();
   }, []);
 
+  const login = (userObj) => setUser(userObj);
+
+  const logout = async () => {
+    try {
+      await fetch("/auth/logout", { method: "POST", credentials: "include" });
+    } catch {}
+    setUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, loading, refreshMe }}>
       {children}
     </AuthContext.Provider>
   );
